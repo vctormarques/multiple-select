@@ -4,8 +4,6 @@ Fazendo multiplo select com a busca
 
 1 -Fazer a importação do font awesome icons
 
-
-
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
 
 ✍🏻 Descrição
@@ -45,15 +43,13 @@ Aplicação multi login, com perfis diferentes, parametrizado para 3 perfis: Adm
     <li>Cria uma tabela migration perfil (role)</li>
     <li>Alterar a migration Users inserindo a coluna de perfil_id (role) - foreign key</li>
     <li>Em App\Fortify\CreateNewUser, acrescentar os campos a mais do registro
-        <ul>
-            <li>```         return User::create([
+```         return User::create([
             'name' => $input['name'],
             'cpf' => $input['cpf'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
             'role_id' => $input['role_id'],
-        ]); ```</li>
-        </ul>
+        ]); ```
     </li>
     <li></li>
 </ul>
