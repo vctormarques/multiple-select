@@ -12,6 +12,18 @@ Esse projeto foi desenvolvido com as seguintes
 Aplicação multi login, com perfis diferentes, parametrizado para 3 perfis: Administrador, Contratante, Financeiro.
 <br>
 <br>
+# Table of Contents
+1. [Example](#example)
+2. [Example2](#example2)
+3. [Third Example](#third-example)
+4. [Fourth Example](#fourth-examplehttpwwwfourthexamplecom)
+
+
+## Example
+## Example2
+## Third Example
+## [Fourth Example](http://www.fourthexample.com) 
+
 🧪 Tecnologias
 <hr>
 <ul>
@@ -39,20 +51,80 @@ Aplicação multi login, com perfis diferentes, parametrizado para 3 perfis: Adm
 ```
 
 💻 Como fazer ?
-<ul>
-    <li>Cria uma tabela migration perfil (role)</li>
-    <li>Alterar a migration Users inserindo a coluna de perfil_id (role) - foreign key</li>
-    <li>Em App\Fortify\CreateNewUser, acrescentar os campos a mais do registro
-```         return User::create([
+1 - Cria uma tabela migration perfil (role)
+2 - Alterar a migration Users inserindo a coluna de perfil_id (role) - foreign key
+3 - Em App\Fortify\CreateNewUser, acrescentar os campos a mais do registro
+```         
+return User::create([
             'name' => $input['name'],
             'cpf' => $input['cpf'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
             'role_id' => $input['role_id'],
-        ]); ```
-    </li>
-    <li></li>
-</ul>
+        ]); 
+```
+4 - Criado os controllers separadados em cada pasta, exemplo: App\Http\Controllers\Admin
+``` 
+php artisan make:controller Admin/HomeController
+php artisan make:controller Contratante/HomeController
+php artisan make:controller Financeiro/HomeController
+```
 
+5 - Criando a middleware 
+```
+php artisan make:middleware CheckRole
+``` 
 
+6 - Configurando a rota-> routes\web.php
+```
+Route::group(['middleware' => 'auth'], function() {
+    Route::group(['middleware' => 'role:contratante'], function() {
+        Route::get('/contratante/home', 'Contratante\HomeController@index')->name('contratante.home');
+    });
+    
+    Route::group(['middleware' => 'role:admin'], function() {
+        Route::get('/admin/home', 'Admin\HomeController@index')->name('admin.home');
+    });
+    Route::group(['middleware' => 'role:financeiro'], function() {
+        Route::get('/financeiro/home', 'Financeiro\HomeController@index')->name('financeiro.home');
+    });
+});
+```
 
+7 - Configurando a middleware, em: App\Http\Middleware\CheckRole.php, com o código abaixo:
+```
+ public function handle(Request $request, Closure $next, string $role)
+    {
+        if ($role == 'admin' && auth()->user()->role_id != 1) {
+            // abort(403);
+            Auth::logout();
+            return redirect()->route('login')
+            ->withInput()
+            ->with('erro','Página acessada somente por administrador');
+        }
+
+        if ($role == 'contratante' && auth()->user()->role_id != 2) {
+            // abort(403);
+            Auth::logout();
+            return redirect()->route('login')
+            ->withInput()
+            ->with('erro','Página acessada somente por contratante');
+        }
+
+        if ($role == 'financeiro' && auth()->user()->role_id != 3) {
+            // abort(403);
+            Auth::logout();
+            return redirect()->route('login')
+            ->withInput()
+            ->with('erro','Página acessada somente pelo financeiro');
+        }
+
+        return $next($request);
+    }
+```    
+
+8 - Adicionar a middleware em Kernel.php App\Http\Kernel.php, embaixo de protected $routeMiddleware 
+
+    ```  
+    'role' => \App\Http\Middleware\CheckRole::class,
+    ``` 
